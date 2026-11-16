@@ -88,7 +88,7 @@ pokemon-api/
 1. **Clone o repositório:**
 
 ```bash
-git clone url
+git clone https://github.com/RaykaDev/pokemon-api
 ```
 
 2. **Navegue até a pasta do projeto:**
