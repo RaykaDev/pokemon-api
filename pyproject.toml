@@ -2,14 +2,12 @@
 name = "pokemon-api"
 version = "0.1.0"
 description = "API para consulta de Pokémon utilizando Fastapi e PokeAPI."
-authors = [
-    {name = "Rayka"}
-]
+authors = [{ name = "Rayka" }]
 requires-python = ">=3.13"
 dependencies = [
     "fastapi (>=0.162.0,<0.163.0)",
     "uvicorn (>=0.54.0,<0.55.0)",
-    "httpx (>=0.28.1,<0.29.0)"
+    "httpx (>=0.28.1,<0.29.0)",
 ]
 
 
@@ -18,7 +16,10 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [dependency-groups]
-dev = [
-    "pytest (>=9.2.0,<10.0.0)",
-    "pytest-cov (>=7.1.0,<8.0.0)"
-]
+dev = ["pytest (>=9.2.0,<10.0.0)", "pytest-cov (>=7.1.0,<8.0.0)"]
+
+[tool.poetry]
+package-mode = false
+
+[tool.uv]
+package = false
