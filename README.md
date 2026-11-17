@@ -235,7 +235,9 @@ podman logs pokemon-api-container
 
 ## 🚀 Deploy
 
-**URL de produção:** Em breve.
+**API em produção:** https://pokemon-api-p7nt.vercel.app/
+
+**Documentação Swagger:** https://pokemon-api-p7nt.vercel.app/docs
 
 A aplicação será publicada em uma plataforma de hospedagem, permitindo o acesso público aos endpoints e à documentação interativa do FastAPI.
 
