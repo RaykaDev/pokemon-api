@@ -1,39 +1,46 @@
 # 📚 Pokémon API
 
-Este é um projeto desenvolvido para praticar a criação de APIs REST com **FastAPI**, consumo de APIs externas, organização modular de aplicações back-end, testes automatizados e conteinerização com Podman.
+Este projeto foi desenvolvido para praticar a criação de APIs REST com **FastAPI**, consumo de APIs externas, operações CRUD, persistência de dados com PostgreSQL, testes automatizados e conteinerização com Podman.
 
-**O objetivo é simples:** desenvolver uma API que consome dados diretamente da [PokeAPI](https://pokeapi.co/), permitindo listar Pokémon de forma paginada e consultar os detalhes de um Pokémon específico.
+**O objetivo:** desenvolver uma API que integra dados da [PokeAPI](https://pokeapi.co/) e permite também cadastrar, consultar, atualizar e excluir Pokémon em um banco de dados próprio.
 
 <br>
 
 ## ✨ Sobre o Projeto
 
-Neste sistema, os dados dos Pokémon são obtidos diretamente da **PokeAPI**, uma API pública que disponibiliza informações sobre os Pokémon. A aplicação utiliza a biblioteca **HTTPX** para realizar as requisições HTTP e processar os dados recebidos.
+A aplicação possui duas funcionalidades principais:
 
-A API disponibiliza dois endpoints principais: um para listar Pokémon com paginação, permitindo controlar a quantidade de resultados e o deslocamento inicial (`limit` e `offset`), e outro para consultar os detalhes de um Pokémon específico pelo seu `id`.
+**1. Integração com a PokeAPI**
 
-As respostas são organizadas em um formato JSON próprio, contendo informações como nome, identificador, altura, tipos e sprites (imagens frontal e traseira). A documentação interativa é disponibilizada automaticamente pelo FastAPI através do Swagger UI (`/docs`).
+Consome dados diretamente da API pública utilizando HTTPX, permitindo listar Pokémon com paginação e consultar detalhes individuais. Os dados recebidos são processados e organizados em respostas JSON.
+
+**2. Gerenciamento de Pokémon com PostgreSQL**
+
+Implementa operações CRUD (_Create, Read, Update e Delete_) para gerenciar registros em um banco de dados PostgreSQL. A comunicação com o banco é realizada utilizando SQLAlchemy, enquanto os schemas do Pydantic validam os dados de entrada e saída.
 
 **O sistema também:**
 
-- consome dados diretamente da PokeAPI, sem depender de armazenamento local
+- consome dados externos diretamente da PokeAPI
 - lista Pokémon com paginação através dos parâmetros `limit` e `offset`
 - retorna informações de paginação, incluindo total de registros, próximo e anterior
-- consulta os detalhes de um Pokémon específico pelo seu identificador
-- organiza os dados recebidos da API externa em um formato JSON padronizado
-- utiliza HTTPX para realizar requisições HTTP com configuração de timeout
+- consulta detalhes de Pokémon pelo identificador
+- permite cadastrar novos Pokémon no banco de dados
+- permite listar e consultar Pokémon armazenados
+- permite atualizar e excluir registros
+- utiliza PostgreSQL para persistência dos dados
+- utiliza SQLAlchemy para mapeamento objeto-relacional (ORM)
+- utiliza Pydantic para validação e estruturação dos dados
 - trata erros de conexão com a API externa, retornando status code 503
-- trata Pokémon não encontrados, retornando status code 404
-- valida os parâmetros de paginação, impedindo valores inválidos
-- utiliza tipagem com type hints nas funções
+- trata registros não encontrados, retornando status code 404
+- utiliza tipagem com type hints
 - possui testes automatizados com Pytest e relatório de cobertura com Pytest-Cov
-- utiliza Podman para construir e executar a aplicação em contêiner
+- utiliza Podman e Podman Compose para executar a aplicação e o banco de dados em contêineres
 
 <br>
 
 ## 📁 Estrutura de Arquivos
 
-O projeto está organizado de forma modular, separando a aplicação, as rotas, os serviços e os testes:
+O projeto está organizado de forma modular, separando responsabilidades entre rotas, serviços, modelos, schemas, operações CRUD e testes:
 
 ```text
 pokemon-api/
@@ -41,32 +48,51 @@ pokemon-api/
 ├── app/
 │   ├── __init__.py
 │   ├── main.py
+│   ├── database.py
+│   │
+│   ├── crud/
+│   │   └── pokemon.py
+│   │
+│   ├── models/
+│   │   └── pokemon.py
 │   │
 │   ├── routes/
-│   │   ├── __init__.py
+│   │   └── pokemon.py
+│   │
+│   ├── schemas/
 │   │   └── pokemon.py
 │   │
 │   └── services/
-│       ├── __init__.py
 │       └── pokeapi.py
 │
 ├── tests/
-│   └── test_pokemon.py
+│   ├── test_pokemon.py
+│   └── test_crud.py
 │
-├── Dockerfile
+├── .github/
+│   └── workflows/
+│       └── ...
+│
 ├── .dockerignore
+├── .env.example
 ├── .gitignore
+├── Dockerfile
+├── docker-compose.yml
 ├── pyproject.toml
 └── poetry.lock
 ```
 
-- `app/main.py`: inicializa a aplicação FastAPI e registra as rotas.
-- `app/routes/pokemon.py`: define os endpoints de consulta dos Pokémon.
-- `app/services/pokeapi.py`: realiza as requisições à PokeAPI, processa os dados e trata os erros.
-- `tests/test_pokemon.py`: contém os testes automatizados dos endpoints e dos comportamentos da aplicação.
+- `app/main.py`: inicializa a aplicação FastAPI e configura o ciclo de vida da aplicação.
+- `app/database.py`: configura a conexão com PostgreSQL e disponibiliza sessões do banco.
+- `app/crud/pokemon.py`: concentra as operações de criação, consulta, atualização e exclusão.
+- `app/models/pokemon.py`: define o modelo ORM e a estrutura da tabela de Pokémon.
+- `app/routes/pokemon.py`: define os endpoints da aplicação.
+- `app/schemas/pokemon.py`: define os schemas utilizados para validação e resposta dos dados.
+- `app/services/pokeapi.py`: realiza as requisições à PokeAPI e processa os dados externos.
+- `tests/`: contém os testes automatizados da integração com a PokeAPI e das operações CRUD.
 - `Dockerfile`: define as instruções para construir a imagem da aplicação.
-- `.dockerignore`: especifica os arquivos e diretórios que não devem ser enviados durante a construção da imagem.
-- `.gitignore`: especifica os arquivos e diretórios que não devem ser versionados pelo Git.
+- `docker-compose.yml`: configura os serviços da API e do PostgreSQL.
+- `.env.example`: disponibiliza um modelo das variáveis de ambiente necessárias.
 - `pyproject.toml` e `poetry.lock`: arquivos utilizados pelo Poetry para gerenciamento de dependências.
 
 <br>
@@ -75,6 +101,9 @@ pokemon-api/
 
 [![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-D71F00?style=for-the-badge)](https://www.sqlalchemy.org/)
+[![Pydantic](https://img.shields.io/badge/Pydantic-E92063?style=for-the-badge)](https://docs.pydantic.dev/)
 [![HTTPX](https://img.shields.io/badge/HTTPX-333333?style=for-the-badge)](https://www.python-httpx.org/)
 [![Pytest](https://img.shields.io/badge/Pytest-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white)](https://docs.pytest.org/)
 [![Poetry](https://img.shields.io/badge/Poetry-60A5FA?style=for-the-badge&logo=poetry&logoColor=white)](https://python-poetry.org/)
@@ -85,105 +114,165 @@ pokemon-api/
 
 ## ▶️ Como Rodar o Projeto
 
-1. **Clone o repositório:**
+### Pré-requisitos
+
+- Python 3.13 ou superior
+- Poetry
+- Podman
+- Podman Compose
+
+### 1. Clone o repositório
 
 ```bash
 git clone https://github.com/RaykaDev/pokemon-api
 ```
 
-2. **Navegue até a pasta do projeto:**
+### 2. Acesse a pasta do projeto
 
 ```bash
 cd pokemon-api
 ```
 
-3. **Instale as dependências com Poetry:**
+### 3. Configure as variáveis de ambiente
 
-```bash
-poetry install
+Crie um arquivo `.env` na raiz do projeto, utilizando o `.env.example` como referência.
+
+Configure as seguintes variáveis:
+
+```env
+DATABASE_URL=postgresql+psycopg://usuario:senha@localhost:5432/pokemon_db
+POSTGRES_USER=usuario
+POSTGRES_PASSWORD=senha
+POSTGRES_DB=pokemon_db
 ```
 
-4. **Ative o ambiente virtual do Poetry:**
+Substitua os valores de exemplo pelas credenciais que desejar utilizar.
+
+**Importante:** o arquivo `.env` contém informações privadas e não deve ser enviado ao GitHub.
+
+### 4. Inicie a aplicação e o banco de dados
+
+Com o Podman Machine em execução, utilize:
 
 ```bash
-poetry shell
+podman compose up --build -d
 ```
 
-Caso prefira, também é possível executar os comandos utilizando `poetry run`, sem precisar ativar o ambiente virtual.
+O comando constrói a imagem da API e inicia os serviços configurados no `docker-compose.yml`, incluindo o PostgreSQL.
 
-5. **Inicie a aplicação FastAPI:**
+### 5. Verifique os contêineres
 
 ```bash
-poetry run uvicorn app.main:app --reload
+podman compose ps
 ```
 
-6. **Acesse a aplicação:**
+### 6. Acesse a aplicação
+
+**API:**
 
 ```text
-http://127.0.0.1:8000/
+http://localhost:8000/
 ```
 
-7. **Acesse a documentação interativa (Swagger UI):**
+**Documentação interativa (Swagger UI):**
 
 ```text
-http://127.0.0.1:8000/docs
+http://localhost:8000/docs
+```
+
+### Comandos úteis do Podman
+
+Visualizar os logs da API:
+
+```bash
+podman compose logs api
+```
+
+Visualizar os logs do banco de dados:
+
+```bash
+podman compose logs db
+```
+
+Parar os serviços:
+
+```bash
+podman compose down
 ```
 
 <br>
 
 ## 📌 Endpoints
 
-| Método | Rota             | Descrição                                     |
-| ------ | ---------------- | --------------------------------------------- |
-| `GET`  | `/`              | Rota inicial de boas-vindas                   |
-| `GET`  | `/pokemons`      | Lista Pokémon com paginação                   |
-| `GET`  | `/pokemons/{id}` | Consulta os detalhes de um Pokémon específico |
+### Integração com a PokeAPI
 
-### Exemplos de requisição
+| Método | Rota                     | Descrição                                  |
+| ------ | ------------------------ | ------------------------------------------ |
+| `GET`  | `/pokeapi/pokemons`      | Lista Pokémon com paginação                |
+| `GET`  | `/pokeapi/pokemons/{id}` | Consulta detalhes de um Pokémon na PokeAPI |
 
-**Listar Pokémon com paginação:**
+**Exemplos de requisição:**
 
-```http
-GET /pokemons?limit=20&offset=0
-```
-
-**Consultar um Pokémon pelo ID:**
+Listar Pokémon:
 
 ```http
-GET /pokemons/25
+GET /pokeapi/pokemons?limit=20&offset=0
 ```
 
-### Exemplo de resposta — Listagem paginada
+Consultar Pikachu:
+
+```http
+GET /pokeapi/pokemons/25
+```
+
+### Gerenciamento de Pokémon — CRUD
+
+| Método   | Rota                     | Descrição                       |
+| -------- | ------------------------ | ------------------------------- |
+| `POST`   | `/pokemons`              | Cadastra um Pokémon             |
+| `GET`    | `/pokemons`              | Lista Pokémon armazenados       |
+| `GET`    | `/pokemons/{pokemon_id}` | Consulta um Pokémon pelo ID     |
+| `PUT`    | `/pokemons/{pokemon_id}` | Atualiza os dados de um Pokémon |
+| `DELETE` | `/pokemons/{pokemon_id}` | Exclui um Pokémon               |
+
+**Exemplo de cadastro:**
+
+```http
+POST /pokemons
+```
+
+Corpo da requisição:
 
 ```json
 {
-  "data": [
-    {
-      "name": "pikachu",
-      "id": 25,
-      "height": 4,
-      "types": ["electric"],
-      "sprites": {
-        "front_default": "https://raw.githubusercontent.com/...",
-        "back_default": "https://raw.githubusercontent.com/..."
-      }
-    }
-  ],
-  "pagination": {
-    "total": 1350,
-    "limit": 20,
-    "offset": 0,
-    "next": "/pokemons?limit=20&offset=20",
-    "previous": null
-  }
+  "nome": "Pikachu",
+  "altura": 4,
+  "peso": 60,
+  "tipo": "Elétrico"
 }
 ```
+
+**Exemplo de resposta:**
+
+```json
+{
+  "id": 1,
+  "nome": "Pikachu",
+  "altura": 4,
+  "peso": 60,
+  "tipo": "Elétrico"
+}
+```
+
+A documentação Swagger disponibiliza os campos e parâmetros necessários para cada operação.
 
 <br>
 
 ## 🧪 Testes
 
-O projeto utiliza **Pytest** para executar testes automatizados, verificando o comportamento dos endpoints, a paginação, a validação dos parâmetros e o tratamento de erros.
+O projeto utiliza **Pytest** para executar testes automatizados, verificando o comportamento dos endpoints, a integração com a PokeAPI, a paginação, o tratamento de erros e as operações CRUD.
+
+Os testes das operações CRUD utilizam um banco SQLite em memória, isolando os testes do banco PostgreSQL utilizado pela aplicação.
 
 **Executar os testes:**
 
@@ -201,35 +290,45 @@ O relatório permite visualizar a porcentagem de cobertura dos testes e identifi
 
 <br>
 
-## 🐳 Docker / Podman
+## 🐳 Conteinerização
 
-O projeto possui um `Dockerfile` para construir uma imagem da aplicação e executá-la em um contêiner.
+O projeto utiliza **Podman** para construir e executar os contêineres da aplicação e do banco de dados.
 
-Embora o arquivo utilize o padrão Dockerfile, a construção e execução foram realizadas com **Podman**.
+O `Dockerfile` define a imagem da API, enquanto o `docker-compose.yml` configura os serviços e a comunicação entre eles.
 
-**Construir a imagem:**
-
-```bash
-podman build -t pokemon-api .
-```
-
-**Executar o contêiner:**
+**Construir e iniciar os serviços:**
 
 ```bash
-podman run -d --name pokemon-api-container -p 8000:8000 pokemon-api
+podman compose up --build -d
 ```
 
-**Verificar os contêineres em execução:**
+**Verificar os contêineres:**
 
 ```bash
-podman ps
+podman compose ps
 ```
 
-**Visualizar os logs da aplicação:**
+**Visualizar os logs:**
 
 ```bash
-podman logs pokemon-api-container
+podman compose logs
 ```
+
+**Parar os serviços:**
+
+```bash
+podman compose down
+```
+
+Os dados do PostgreSQL são persistidos em um volume, permitindo que continuem disponíveis após a parada e recriação dos contêineres.
+
+<br>
+
+## ⚙️ Integração Contínua (CI)
+
+O projeto utiliza **GitHub Actions** para automatizar a execução dos testes durante o fluxo de desenvolvimento.
+
+A integração contínua permite verificar se as alterações realizadas mantêm o funcionamento esperado da aplicação antes de serem incorporadas à branch principal.
 
 <br>
 
@@ -239,26 +338,33 @@ podman logs pokemon-api-container
 
 **Documentação Swagger:** https://pokemon-api-p7nt.vercel.app/docs
 
-A aplicação será publicada em uma plataforma de hospedagem, permitindo o acesso público aos endpoints e à documentação interativa do FastAPI.
+A aplicação possui uma versão publicada na Vercel.
+
+Para disponibilizar todas as funcionalidades da versão atual em produção, é necessário configurar um serviço PostgreSQL externo e definir a variável `DATABASE_URL` nas configurações de ambiente da hospedagem.
 
 <br>
 
 ## 📌 Aprendizados
 
 - Criação e organização de APIs REST com FastAPI
-- Estruturação modular de projetos Python
-- Separação de responsabilidades entre rotas e serviços
+- Estruturação modular de aplicações Python
+- Separação de responsabilidades entre rotas, serviços, modelos, schemas e operações CRUD
 - Consumo de APIs externas utilizando HTTPX
 - Realização de requisições HTTP e tratamento de respostas
 - Manipulação e transformação de dados JSON
-- Utilização de parâmetros de consulta (`query parameters`)
 - Implementação de paginação com `limit` e `offset`
-- Tratamento de exceções e erros HTTP com `HTTPException`
-- Validação de parâmetros com `Query`
-- Utilização de type hints nas funções
+- Criação de operações CRUD
+- Persistência de dados com PostgreSQL
+- Mapeamento objeto-relacional com SQLAlchemy
+- Validação de dados com Pydantic
+- Gerenciamento de sessões e conexões com banco de dados
+- Tratamento de exceções e erros HTTP
 - Criação de testes automatizados com Pytest
+- Isolamento de testes com SQLite em memória
 - Simulação de falhas externas com `monkeypatch`
-- Análise de cobertura de testes com Pytest-Cov
-- Gerenciamento de dependências e ambiente virtual com Poetry
-- Construção de imagens e execução de contêineres com Podman
-- Documentação automática de APIs com Swagger UI
+- Análise de cobertura com Pytest-Cov
+- Gerenciamento de dependências com Poetry
+- Construção e execução de contêineres com Podman
+- Orquestração de serviços com Podman Compose
+- Integração contínua com GitHub Actions
+- Documentação automática com Swagger UI

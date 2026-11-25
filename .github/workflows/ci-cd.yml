@@ -16,6 +16,7 @@ jobs:
 
     env:
       PYTHONPATH: .
+      DATABASE_URL: sqlite:///./ci.db
 
     steps:
       - name: Baixar código do repositório
