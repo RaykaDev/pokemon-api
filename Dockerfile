@@ -2,13 +2,15 @@ FROM python:3.13
 
 WORKDIR /app
 
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    POETRY_VIRTUALENVS_CREATE=false
+
 COPY pyproject.toml poetry.lock ./
 
 RUN pip install --no-cache-dir poetry
 
-ENV POETRY_VIRTUALENVS_CREATE=false
-
-RUN poetry install --only main --no-root
+RUN poetry install --only main --no-root --no-interaction --no-ansi
 
 COPY app/ ./app/
 

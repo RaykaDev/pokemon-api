@@ -1,7 +1,12 @@
+
 .venv/
-.git/
-.pytest_cache/
+venv/
 __pycache__/
-*.pyc
+.pytest_cache/
 .coverage
 htmlcov/
+.git/
+.env
+.env.*
+!.env.example
+.vercel/
