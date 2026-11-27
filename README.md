@@ -274,16 +274,24 @@ O projeto utiliza **Pytest** para executar testes automatizados, verificando o c
 
 Os testes das operações CRUD utilizam um banco SQLite em memória, isolando os testes do banco PostgreSQL utilizado pela aplicação.
 
-**Executar os testes:**
+### Instalação das dependências
+
+Na raiz do projeto, execute:
 
 ```bash
-poetry run pytest
+poetry install --with dev --no-root
 ```
 
-**Executar os testes com relatório de cobertura:**
+### Executar os testes
 
 ```bash
-poetry run pytest --cov=app --cov-report=term-missing
+poetry run python -m pytest
+```
+
+### Executar os testes com relatório de cobertura
+
+```bash
+poetry run python -m pytest --cov=app --cov-report=term-missing
 ```
 
 O relatório permite visualizar a porcentagem de cobertura dos testes e identificar as linhas de código que ainda não foram executadas.
