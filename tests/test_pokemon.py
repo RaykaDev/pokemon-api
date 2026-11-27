@@ -27,6 +27,18 @@ def test_paginacao():
     )
 
 
+def test_paginacao_offset_menor_que_limit():
+    resposta = client.get("/pokeapi/pokemons?limit=2&offset=1")
+
+    assert resposta.status_code == 200
+    assert resposta.json()["pagination"]["limit"] == 2
+    assert resposta.json()["pagination"]["offset"] == 1
+    assert (
+        resposta.json()["pagination"]["previous"]
+        == "/pokeapi/pokemons?limit=2&offset=0"
+    )
+
+
 def test_buscar_pokemon_por_id():
     resposta = client.get("/pokeapi/pokemons/25")
 
@@ -75,3 +87,57 @@ def test_erro_conexao_pokeapi(monkeypatch):
     resposta = client.get("/pokeapi/pokemons")
 
     assert resposta.status_code == 503
+
+
+def test_erro_http_na_listagem(monkeypatch):
+    def lancar_error(*args, **kwargs):
+        requisicao = httpx.Request("GET", "https://pokeapi.co")
+        resposta = httpx.Response(503, request=requisicao)
+
+        raise httpx.HTTPStatusError(
+            "Serviço indisponível",
+            request=requisicao,
+            response=resposta,
+        )
+
+    monkeypatch.setattr("app.services.pokeapi.httpx.get", lancar_error)
+    resposta = client.get("/pokeapi/pokemons")
+
+    assert resposta.status_code == 503
+    assert resposta.json()["detail"] == "PokeAPI está indisponível."
+
+
+def test_erro_http_na_busca_individual(monkeypatch):
+    def lancar_error(*args, **kwargs):
+        requisicao = httpx.Request("GET", "https://pokeapi.co/api/v2/pokemon/25")
+        resposta = httpx.Response(503, request=requisicao)
+
+        raise httpx.HTTPStatusError(
+            "Serviço indisponível",
+            request=requisicao,
+            response=resposta,
+        )
+
+    monkeypatch.setattr("app.services.pokeapi.httpx.get", lancar_error)
+    resposta = client.get("/pokeapi/pokemons/25")
+
+    assert resposta.status_code == 503
+    assert resposta.json()["detail"] == "PokeAPI está indisponível."
+
+
+def test_pokemon_404_na_pokeapi(monkeypatch):
+    def lancar_error(*args, **kwargs):
+        requisicao = httpx.Request("GET", "https://pokeapi.co/api/v2/pokemon/99999")
+        resposta = httpx.Response(404, request=requisicao)
+
+        raise httpx.HTTPStatusError(
+            "Pokémon não encontrado",
+            request=requisicao,
+            response=resposta,
+        )
+
+    monkeypatch.setattr("app.services.pokeapi.httpx.get", lancar_error)
+    resposta = client.get("/pokeapi/pokemons/99999")
+
+    assert resposta.status_code == 404
+    assert resposta.json()["detail"] == "Pokémon não encontrado"
